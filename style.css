@@ -7,6 +7,21 @@
     animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Html5-qrcode custom styles for neat look */
+#reader video {
+    width: 100% !important;
+    border-radius: 1rem;
+    object-fit: cover;
+}
+#reader__dashboard_section_csr button {
+    background-color: #6366f1 !important;
+    color: white !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+}
+
 ::-webkit-scrollbar {
     width: 4px;
 }

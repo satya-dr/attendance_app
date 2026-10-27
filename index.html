@@ -8,14 +8,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Html5-Qrcode Library for Real Camera Scanning -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between font-sans antialiased">
 
     <!-- ================= LOGIN SCREEN ================= -->
-    <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-6">
+    <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-6 my-auto">
             <div class="text-center space-y-2">
                 <div class="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/30 text-white text-2xl">
                     <i class="fa-solid fa-qrcode"></i>
@@ -79,9 +81,9 @@
     </header>
 
     <!-- Main Content Hub -->
-    <main class="flex-1 max-w-md w-full mx-auto p-4 pb-20">
+    <main class="flex-1 max-w-md w-full mx-auto p-4 pb-20 space-y-5">
 
-        <!-- STUDENT PORTAL INTERFACE -->
+        <!-- ================= STUDENT PORTAL ================= -->
         <div id="studentDashboard" class="space-y-5">
             <div class="bg-gradient-to-br from-indigo-900/60 to-slate-800 border border-indigo-500/30 rounded-2xl p-4 shadow-xl">
                 <div class="flex items-center justify-between">
@@ -96,13 +98,14 @@
                 </div>
             </div>
 
+            <!-- Scan QR Quick Action -->
             <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-5 text-center shadow-lg space-y-4">
                 <div class="w-20 h-20 bg-indigo-600/10 border-2 border-dashed border-indigo-500/50 rounded-2xl mx-auto flex items-center justify-center text-indigo-400 text-3xl animate-pulse">
                     <i class="fa-solid fa-camera"></i>
                 </div>
                 <div>
                     <h3 class="font-bold text-base">Scan Class QR Code</h3>
-                    <p class="text-xs text-slate-400 mt-1">Must be within 100 meters of the classroom.</p>
+                    <p class="text-xs text-slate-400 mt-1">Must be within 100 meters of class venue.</p>
                 </div>
                 <button onclick="openScanner()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-expand"></i>
@@ -110,26 +113,31 @@
                 </button>
             </div>
 
+            <!-- Analytics Cards -->
             <div class="grid grid-cols-2 gap-3">
                 <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-3.5 shadow">
-                    <p class="text-xs text-slate-400">Total Classes</p>
-                    <h4 class="text-xl font-bold mt-1 text-slate-100">42</h4>
+                    <p class="text-xs text-slate-400">Total Classes Held</p>
+                    <h4 id="studentTotalClassesCount" class="text-xl font-bold mt-1 text-slate-100">12</h4>
                 </div>
                 <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-3.5 shadow">
                     <p class="text-xs text-slate-400">Attendance Rate</p>
-                    <h4 class="text-xl font-bold mt-1 text-emerald-400">88.5%</h4>
+                    <h4 id="studentAttendancePercentage" class="text-xl font-bold mt-1 text-emerald-400">91.6%</h4>
                 </div>
             </div>
 
+            <!-- Detailed Attendance History -->
             <div class="space-y-3">
-                <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Recent Attendance</h3>
-                <div id="studentLogsList" class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Attendance Full Logs</h3>
+                    <span class="text-[10px] text-indigo-400 font-medium bg-indigo-500/10 px-2 py-0.5 rounded">Verified History</span>
+                </div>
+                <div id="studentFullLogsList" class="space-y-2">
                     <!-- Populated dynamically -->
                 </div>
             </div>
         </div>
 
-        <!-- TEACHER PORTAL INTERFACE -->
+        <!-- ================= TEACHER PORTAL ================= -->
         <div id="teacherDashboard" class="space-y-5 hidden">
             <!-- QR Generation Card -->
             <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl space-y-3">
@@ -165,16 +173,15 @@
                     <span id="activeSubjectTitle" class="inline-block bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-xs px-3 py-1 rounded-full font-semibold">Software Engineering</span>
                     <p class="text-xs text-emerald-400 mt-2"><i class="fa-solid fa-shield-halved"></i> Geo-Fence Active: 100m Radius</p>
                 </div>
-                <button onclick="stopQRCode()" class="text-xs text-rose-400 hover:text-rose-300 font-medium underline">End Session</button>
+                <button onclick="stopQRCode()" class="text-xs text-rose-400 hover:text-rose-300 font-medium underline">End Session & Archive Logs</button>
             </div>
 
-            <!-- Teacher Location Configuration Card -->
+            <!-- Teacher Location Configuration -->
             <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl space-y-3">
                 <div class="flex items-center justify-between">
                     <h4 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-location-crosshairs mr-1 text-emerald-400"></i> Class Venue Geo-Fence</h4>
                     <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-semibold">Teacher Control Only</span>
                 </div>
-                <p class="text-[11px] text-slate-400">Set the exact latitude & longitude of the lecture hall. Students beyond 100m cannot scan.</p>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-[10px] text-slate-400 mb-1">Latitude</label>
@@ -190,64 +197,74 @@
                 </button>
             </div>
 
-            <!-- Teacher Student Management Section -->
+            <!-- Student Registration Form -->
             <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl space-y-3">
                 <div class="flex items-center justify-between">
-                    <h4 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-users-gear mr-1 text-indigo-400"></i> Manage Student Roster</h4>
-                    <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-semibold">Faculty Control Only</span>
+                    <h4 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-user-plus mr-1 text-indigo-400"></i> Register New Student</h4>
+                    <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-semibold">Faculty Control</span>
                 </div>
-                <div class="flex gap-2">
-                    <input type="text" id="newStudentNameInput" placeholder="Student Name" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
-                    <input type="text" id="newStudentRollInput" placeholder="Roll No" class="w-28 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
-                    <button onclick="addStudentByTeacher()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">Add</button>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="regName" placeholder="Full Name" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="regRoll" placeholder="Roll No" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="regDept" placeholder="Department (e.g. CSE)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="regSem" placeholder="Semester (e.g. 5th Sem)" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="regYear" placeholder="Academic Year" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="regRegNo" placeholder="Registration No" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
                 </div>
-                <div id="teacherStudentList" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                    <!-- Populated dynamically -->
+                <button onclick="registerStudentByTeacher()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow transition-all">
+                    Add Student to Roster
+                </button>
+            </div>
+
+            <!-- Master Attendance History -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-clipboard-list mr-1 text-indigo-400"></i> Master Class Attendance Logs</h4>
+                    <span id="teacherTotalArchivedCount" class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">0 Sessions</span>
+                </div>
+                <div id="teacherMasterLogsList" class="space-y-3 max-h-64 overflow-y-auto pr-1">
+                    <p class="text-xs text-slate-500 text-center py-4">No completed session logs archived yet.</p>
                 </div>
             </div>
 
+            <!-- Live Active Attendees -->
             <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow">
                 <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-sm font-semibold text-slate-300">Live Present Students</h4>
+                    <h4 class="text-sm font-semibold text-slate-300">Live Active Session Attendees</h4>
                     <span id="liveCountBadge" class="bg-emerald-500/20 text-emerald-400 text-xs px-2.5 py-0.5 rounded-full font-bold">0 Marked</span>
                 </div>
                 <div id="teacherLiveList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    <p class="text-xs text-slate-500 text-center py-4">No attendance recorded yet.</p>
+                    <p class="text-xs text-slate-500 text-center py-4">No attendance recorded in current session.</p>
                 </div>
             </div>
         </div>
 
     </main>
 
-    <!-- Scanner Modal Overlay -->
-    <div id="scannerModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex flex-col justify-end hidden">
-        <div class="bg-slate-900 border-t border-slate-700 rounded-t-3xl p-6 space-y-5 animate-slide-up max-w-md w-full mx-auto">
+    <!-- ================= REAL CAMERA SCANNER MODAL ================= -->
+    <div id="scannerModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex flex-col justify-end hidden">
+        <div class="bg-slate-900 border-t border-slate-700 rounded-t-3xl p-5 space-y-4 animate-slide-up max-w-md w-full mx-auto">
             <div class="flex items-center justify-between">
-                <h3 class="font-bold text-base">Align QR Code within Frame</h3>
+                <h3 class="font-bold text-base">Scan QR with Camera</h3>
                 <button onclick="closeScanner()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             
-            <div class="relative w-full h-64 bg-slate-950 rounded-2xl border-2 border-indigo-500/50 flex items-center justify-center overflow-hidden">
-                <div class="absolute inset-4 border border-dashed border-indigo-400/40 rounded-xl"></div>
-                <div class="w-full h-1 bg-indigo-500 shadow-[0_0_15px_#6366f1] absolute animate-bounce"></div>
-                <p class="text-xs text-slate-500 z-10">Checking GPS Location (100m Radius)...</p>
-            </div>
-
-            <button onclick="verifyAndMarkAttendance()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg transition-all text-xs">
-                Scan & Verify Geo-Location
-            </button>
+            <!-- Html5-Qrcode Container -->
+            <div id="reader" class="w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-700"></div>
+            
+            <p id="scannerStatus" class="text-center text-xs text-indigo-400 font-medium">Align QR code within camera frame...</p>
         </div>
     </div>
 
-    <!-- ================= PROFILE / LOCATION SETTINGS MODAL ================= -->
+    <!-- ================= PROFILE MODAL ================= -->
     <div id="profileModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 max-w-sm w-full space-y-5 shadow-2xl animate-slide-up">
             <div class="flex items-center justify-between border-b border-slate-700 pb-3">
                 <h3 class="font-bold text-base flex items-center space-x-2">
                     <i class="fa-solid fa-user-gear text-indigo-400"></i>
-                    <span id="modalTitleText">Profile Settings</span>
+                    <span>Profile Settings</span>
                 </h3>
                 <button onclick="closeProfileModal()" class="w-7 h-7 rounded-full bg-slate-700/60 text-slate-400 hover:text-white flex items-center justify-center">
                     <i class="fa-solid fa-xmark text-xs"></i>
@@ -281,11 +298,9 @@
                     <input type="email" id="profileEmail" value="satyajit.cgc@gmail.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
                 </div>
 
-                <!-- Location View Section for Students (Read-only) -->
                 <div class="bg-slate-900/80 p-3 rounded-2xl border border-slate-700/60 space-y-1">
-                    <label class="block text-[11px] text-indigo-400 font-medium"><i class="fa-solid fa-location-dot"></i> Venue Geo-Fence Status</label>
-                    <p class="text-[10px] text-slate-400">Class Latitude/Longitude set by teacher:</p>
-                    <p id="studentViewLocationInfo" class="text-xs font-mono text-emerald-400 font-bold">Lat: 26.3251, Lng: 89.4582 (100m Limit)</p>
+                    <label class="block text-[11px] text-indigo-400 font-medium"><i class="fa-solid fa-location-dot"></i> Geo-Fence Radius</label>
+                    <p id="studentViewLocationInfo" class="text-xs font-mono text-emerald-400 font-bold">100 Meter Enforcement Active</p>
                 </div>
             </div>
 
