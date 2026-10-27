@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Attendance App - Secure Geo-Fenced Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between font-sans antialiased">
+
+    <!-- ================= LOGIN SCREEN ================= -->
+    <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 rounded-2xl bg-indigo-600 flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/30 text-white text-2xl">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-wide">Smart Attendance</h1>
+                <p class="text-xs text-slate-400">Select your role to continue</p>
+            </div>
+
+            <!-- Role Selector Tabs -->
+            <div class="grid grid-cols-2 gap-2 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-700/60">
+                <button onclick="setLoginRole('student')" id="loginStudentTab" class="py-2.5 text-xs font-semibold rounded-xl transition-all bg-indigo-600 text-white shadow">Student</button>
+                <button onclick="setLoginRole('teacher')" id="loginTeacherTab" class="py-2.5 text-xs font-semibold rounded-xl transition-all text-slate-400 hover:text-white">Teacher</button>
+            </div>
+
+            <!-- Dynamic Input Form -->
+            <div class="space-y-4">
+                <div id="studentFields" class="space-y-3">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1 font-medium">Full Name</label>
+                        <input type="text" id="inputStudentName" value="Satyajit Roy" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1 font-medium">Roll Number / ID</label>
+                        <input type="text" id="inputStudentRoll" value="CSE/2024/042" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div id="teacherFields" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1 font-medium">Faculty Name</label>
+                        <input type="text" id="inputTeacherName" value="Dr. A. Sharma" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1 font-medium">Faculty Passcode</label>
+                        <input type="password" id="inputTeacherPass" value="••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <button onclick="handleLogin()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2">
+                    <span>Login to Dashboard</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MAIN APP INTERFACE ================= -->
+    <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-md">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <i class="fa-solid fa-qrcode text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base leading-tight tracking-wide">Smart Attendance</h1>
+                <p id="appHeaderRoleBadge" class="text-xs text-indigo-400 font-medium">Student Portal</p>
+            </div>
+        </div>
+        <button onclick="logout()" class="text-xs text-slate-400 hover:text-rose-400 bg-slate-700/50 hover:bg-rose-500/10 px-3 py-1.5 rounded-xl border border-slate-600 transition-all">
+            <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
+        </button>
+    </header>
+
+    <!-- Main Content Hub -->
+    <main class="flex-1 max-w-md w-full mx-auto p-4 pb-20">
+
+        <!-- STUDENT PORTAL INTERFACE -->
+        <div id="studentDashboard" class="space-y-5">
+            <div class="bg-gradient-to-br from-indigo-900/60 to-slate-800 border border-indigo-500/30 rounded-2xl p-4 shadow-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-indigo-300 uppercase tracking-wider font-semibold">Welcome back,</p>
+                        <h2 id="displayStudentName" class="text-lg font-bold">Satyajit Roy</h2>
+                        <p id="displayStudentRoll" class="text-xs text-slate-400">Roll: CSE/2024/042</p>
+                    </div>
+                    <div class="w-14 h-14 rounded-full border-2 border-indigo-500/50 overflow-hidden shadow-lg bg-slate-900 flex items-center justify-center">
+                        <img id="displayStudentAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Student Photo" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-5 text-center shadow-lg space-y-4">
+                <div class="w-20 h-20 bg-indigo-600/10 border-2 border-dashed border-indigo-500/50 rounded-2xl mx-auto flex items-center justify-center text-indigo-400 text-3xl animate-pulse">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-base">Scan Class QR Code</h3>
+                    <p class="text-xs text-slate-400 mt-1">Must be within 100 meters of the classroom.</p>
+                </div>
+                <button onclick="openScanner()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-expand"></i>
+                    <span>Open Camera Scanner</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-3.5 shadow">
+                    <p class="text-xs text-slate-400">Total Classes</p>
+                    <h4 class="text-xl font-bold mt-1 text-slate-100">42</h4>
+                </div>
+                <div class="bg-slate-800 border border-slate-700/80 rounded-xl p-3.5 shadow">
+                    <p class="text-xs text-slate-400">Attendance Rate</p>
+                    <h4 class="text-xl font-bold mt-1 text-emerald-400">88.5%</h4>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Recent Attendance</h3>
+                <div id="studentLogsList" class="space-y-2">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TEACHER PORTAL INTERFACE -->
+        <div id="teacherDashboard" class="space-y-5 hidden">
+            <!-- QR Generation Card -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-300">Generate Session QR</h3>
+                        <span id="displayTeacherName" class="text-xs text-indigo-400 font-medium">Dr. A. Sharma</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-full border-2 border-emerald-500/50 overflow-hidden shadow-lg bg-slate-900 flex items-center justify-center">
+                        <img id="displayTeacherAvatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Teacher Photo" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Select Subject</label>
+                    <select id="subjectSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <option>Compiler Design (CS-501)</option>
+                        <option>Computer Networks (CS-502)</option>
+                        <option>Software Engineering (CS-503)</option>
+                        <option>Operating Systems (CS-504)</option>
+                    </select>
+                </div>
+                <button onclick="generateQRCode()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>Generate Active QR (100m Geo-Fence)</span>
+                </button>
+            </div>
+
+            <div id="qrDisplayContainer" class="bg-slate-800 border border-slate-700 rounded-2xl p-6 text-center shadow-lg hidden space-y-4">
+                <div class="inline-block p-4 bg-white rounded-2xl shadow-inner">
+                    <img id="qrCodeImage" src="" alt="Session QR Code" class="w-48 h-48 mx-auto">
+                </div>
+                <div>
+                    <span id="activeSubjectTitle" class="inline-block bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-xs px-3 py-1 rounded-full font-semibold">Software Engineering</span>
+                    <p class="text-xs text-emerald-400 mt-2"><i class="fa-solid fa-shield-halved"></i> Geo-Fence Active: 100m Radius</p>
+                </div>
+                <button onclick="stopQRCode()" class="text-xs text-rose-400 hover:text-rose-300 font-medium underline">End Session</button>
+            </div>
+
+            <!-- Teacher Location Configuration Card -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-location-crosshairs mr-1 text-emerald-400"></i> Class Venue Geo-Fence</h4>
+                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-semibold">Teacher Control Only</span>
+                </div>
+                <p class="text-[11px] text-slate-400">Set the exact latitude & longitude of the lecture hall. Students beyond 100m cannot scan.</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Latitude</label>
+                        <input type="text" id="teacherLatInput" value="26.3251" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Longitude</label>
+                        <input type="text" id="teacherLngInput" value="89.4582" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+                <button onclick="updateClassLocation()" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-semibold transition-all">
+                    Update Venue Coordinates
+                </button>
+            </div>
+
+            <!-- Teacher Student Management Section -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-semibold text-slate-300"><i class="fa-solid fa-users-gear mr-1 text-indigo-400"></i> Manage Student Roster</h4>
+                    <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-semibold">Faculty Control Only</span>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="newStudentNameInput" placeholder="Student Name" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="newStudentRollInput" placeholder="Roll No" class="w-28 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <button onclick="addStudentByTeacher()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs font-semibold shadow">Add</button>
+                </div>
+                <div id="teacherStudentList" class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-sm font-semibold text-slate-300">Live Present Students</h4>
+                    <span id="liveCountBadge" class="bg-emerald-500/20 text-emerald-400 text-xs px-2.5 py-0.5 rounded-full font-bold">0 Marked</span>
+                </div>
+                <div id="teacherLiveList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    <p class="text-xs text-slate-500 text-center py-4">No attendance recorded yet.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Scanner Modal Overlay -->
+    <div id="scannerModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex flex-col justify-end hidden">
+        <div class="bg-slate-900 border-t border-slate-700 rounded-t-3xl p-6 space-y-5 animate-slide-up max-w-md w-full mx-auto">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-base">Align QR Code within Frame</h3>
+                <button onclick="closeScanner()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="relative w-full h-64 bg-slate-950 rounded-2xl border-2 border-indigo-500/50 flex items-center justify-center overflow-hidden">
+                <div class="absolute inset-4 border border-dashed border-indigo-400/40 rounded-xl"></div>
+                <div class="w-full h-1 bg-indigo-500 shadow-[0_0_15px_#6366f1] absolute animate-bounce"></div>
+                <p class="text-xs text-slate-500 z-10">Checking GPS Location (100m Radius)...</p>
+            </div>
+
+            <button onclick="verifyAndMarkAttendance()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg transition-all text-xs">
+                Scan & Verify Geo-Location
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= PROFILE / LOCATION SETTINGS MODAL ================= -->
+    <div id="profileModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 max-w-sm w-full space-y-5 shadow-2xl animate-slide-up">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-base flex items-center space-x-2">
+                    <i class="fa-solid fa-user-gear text-indigo-400"></i>
+                    <span id="modalTitleText">Profile Settings</span>
+                </h3>
+                <button onclick="closeProfileModal()" class="w-7 h-7 rounded-full bg-slate-700/60 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="flex items-center space-x-4 bg-slate-900/60 p-3 rounded-2xl border border-slate-700/50">
+                    <img id="profileModalAvatar" src="" alt="Avatar" class="w-14 h-14 rounded-full object-cover border border-indigo-500">
+                    <div class="flex-1 space-y-1">
+                        <label class="block text-[10px] text-slate-400 font-medium">Profile Photo URL</label>
+                        <input type="text" id="profileAvatarInput" placeholder="Image link..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] text-slate-400 mb-1 font-medium">Full Name <span class="text-rose-400 text-[10px]">(Locked)</span></label>
+                    <input type="text" id="profileName" disabled class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 cursor-not-allowed">
+                </div>
+                <div>
+                    <label class="block text-[11px] text-slate-400 mb-1 font-medium">Roll Number / ID <span class="text-rose-400 text-[10px]">(Locked)</span></label>
+                    <input type="text" id="profileRoll" disabled class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 cursor-not-allowed">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] text-emerald-400 mb-1 font-medium">Mobile Number <span class="text-[10px]">(Editable)</span></label>
+                    <input type="text" id="profileMobile" value="+91 9876543210" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] text-emerald-400 mb-1 font-medium">Gmail Address <span class="text-[10px]">(Editable)</span></label>
+                    <input type="email" id="profileEmail" value="satyajit.cgc@gmail.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <!-- Location View Section for Students (Read-only) -->
+                <div class="bg-slate-900/80 p-3 rounded-2xl border border-slate-700/60 space-y-1">
+                    <label class="block text-[11px] text-indigo-400 font-medium"><i class="fa-solid fa-location-dot"></i> Venue Geo-Fence Status</label>
+                    <p class="text-[10px] text-slate-400">Class Latitude/Longitude set by teacher:</p>
+                    <p id="studentViewLocationInfo" class="text-xs font-mono text-emerald-400 font-bold">Lat: 26.3251, Lng: 89.4582 (100m Limit)</p>
+                </div>
+            </div>
+
+            <button onclick="saveProfileChanges()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg transition-all text-xs">
+                Save Allowed Changes
+            </button>
+        </div>
+    </div>
+
+    <!-- Bottom App Bar -->
+    <nav class="bg-slate-800/90 backdrop-blur border-t border-slate-700/80 fixed bottom-0 left-0 right-0 py-2 px-6 flex justify-around items-center z-30 max-w-md mx-auto rounded-t-2xl shadow-2xl">
+        <button onclick="openHomeTab()" class="flex flex-col items-center text-indigo-400 space-y-1">
+            <i class="fa-solid fa-house text-base"></i>
+            <span class="text-[10px] font-medium">Home</span>
+        </button>
+        <button onclick="openLocationInfoPrompt()" class="flex flex-col items-center text-slate-400 hover:text-slate-200 space-y-1">
+            <i class="fa-solid fa-location-dot text-base"></i>
+            <span class="text-[10px] font-medium">Location</span>
+        </button>
+        <button onclick="openProfileModal()" class="flex flex-col items-center text-slate-400 hover:text-slate-200 space-y-1">
+            <i class="fa-solid fa-user text-base"></i>
+            <span class="text-[10px] font-medium">Profile</span>
+        </button>
+    </nav>
+
+    <!-- Custom Script -->
+    <script src="script.js"></script>
+</body>
+</html>
